@@ -1,0 +1,17 @@
+<link href="https://fonts.googleapis.com/css2?family=Courgette&display=swap" rel="stylesheet"></link>
+{% extends "base.html" %}
+
+{% block main %}
+<div id="app">
+    <app-header></app-header>
+
+    <main>
+        <div class="container">
+            <!-- component matched by the route will render here -->
+            <router-view></router-view>
+        </div>
+    </main>
+
+    <app-footer></app-footer>
+</div>
+{% endblock %}
