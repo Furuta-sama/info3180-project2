@@ -13,6 +13,7 @@ from app.models import Users, Cars, Favourites
 from . import db
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
+from flask import send_from_directory
 import os
 import uuid
 import hashlib
@@ -69,7 +70,6 @@ def register():
         user.username.data = request.form['username']
         user.password.data = request.form['password']
         user.name.data = request.form['name']
-        user.lastname.data = request.form['lastname']
         user.email.data = request.form['email']
         user.location.data = request.form['location']
         user.biography.data = request.form['biography']
@@ -78,16 +78,14 @@ def register():
         if user.validate_on_submit():
             username = user.username.data
             password = user.password.data
-            firstname = user.firstname.data
-            lastname = user.lastname.data
+            name = user.name.data
             email = user.email.data
             location = user.location.data
             biography = user.biography.data
             photo = user.photo.data
 
             filename = genUniqueFileName(photo.filename)
-            #(hashlib.sha256(password.encode()).hexdigest())
-            userDB = Users(username, password, firstname, lastname, email, location, biography, filename)
+            userDB = Users(username, password, name, email, location, biography, filename)
             db.session.add(userDB)
             db.session.commit()
             photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -113,10 +111,6 @@ def login():
 
             if user is not None and check_password_hash(user.password, password):
 
-                #login_user(user)
-                #session['user_id'] = user.id
-                #session['user_name'] = user.username
-
                 payload = {'id': user.id, 'username': user.username}
                 token = jwt.encode(payload, app.config['SALT'], algorithm='HS256').decode('utf-8')
 
@@ -141,7 +135,7 @@ def logout():
 def cars():
     message = [{"errors": "Invalid request"}]
     if request.method == "GET":
-        cars = cars.query.order_by(cars.id).all()
+        cars = Cars.query.order_by(Cars.id).all()
         allcars = []
         for c in cars:
             car = {}
@@ -149,49 +143,47 @@ def cars():
             car['description'] = c.description
             car['year'] = c.year
             car['make'] = c.make
-            car['colour'] = c.color
+            car['colour'] = c.colour
             car['model'] = c.model
             car['transmission'] = c.transmission
             car['car_type'] = c.car_type
-            car['price'] = c.price
+            car['price'] = float(c.price)
             car['photo'] = c.photo
             car['user_id'] = c.user_id
             allcars+= [car]
-        return jsonify(allcars=allcars)
+        return jsonify(allcars)
     elif request.method == "POST":
         car = CarForm()
-        message = [{"errors": "Invalid request"}]
-        if request.method == "POST":
-            car = CarForm()
-            message = [{"errors": "Invalid request"}]
-            if request.method == "POST":
-                message = [{"errors": form_errors(car)}]
-                if post.validate_on_submit():
-                    desc = form.description.data
-                    make = form.make.data
-                    model = form.model.data
-                    color = form.color.data
-                    year = form.year.data
-                    transmission = form.transmission.data
-                    car_type = form.car_type.data
-                    price = form.price.data
-                    photo = form.photo.data
-                    user_id = g.current_user['id']
+        message = [{"errors": form_errors(car)}]
+        if car.validate_on_submit():
+            print("Hi mom") 
+            desc = car.description.data
+            make = car.make.data
+            model = car.model.data
+            colour = car.colour.data
+            year = car.year.data
+            transmission = car.transmission.data
+            car_type = car.car_type.data
+            price = car.price.data
+            photo = car.photo.data
+            user = g.current_user
+            user_id = user["id"]
 
-                    filename = secure_filename(photo.filename)
-                    photo.save(os.path.join(
-                        app.config['UPLOAD_FOLDER'], filename
-                    ))
+            filename = secure_filename(photo.filename)
+            photo.save(os.path.join(
+                app.config['UPLOAD_FOLDER'], filename
+            ))
 
-                    car = Cars(desc, make, model, color, year, transmission, car_type, price, filename, user_id)
-                    db.session.add(car)
-                    db.session.commit()
+            carDB = Cars(user_id, desc, make, model, colour, year, transmission, car_type, price, filename)
+            db.session.add(carDB)
+            db.session.commit()
 
-                    message = [{"message": "Successful Posted!"}]
+            message = [{"message": "Successful Posted!"}]
     message = jsonify(message=message)
     return message
 
 @app.route('/api/cars/<car_id>', methods=['GET'])
+@requires_auth
 def get_car(car_id):
     c = Cars.query.filter_by(id=car_id).first()
     car = {}
@@ -199,28 +191,30 @@ def get_car(car_id):
     car['description'] = c.description
     car['year'] = c.year
     car['make'] = c.make
-    car['colour'] = c.color
+    car['colour'] = c.colour
     car['model'] = c.model
     car['transmission'] = c.transmission
     car['car_type'] = c.car_type
-    car['price'] = c.price
+    car['price'] = float(c.price)
     car['photo'] = c.photo
-    car['user_id'] = g.current_user['id']
+    car['user_id'] = c.user_id
     return jsonify(car)
 
 @app.route('/api/cars/<car_id>/favourite', methods=['POST'])
+@requires_auth
 def add_fav(car_id):
     message = [{"errors": "Invalid request"}]
     if request.method == 'POST':
-            fav = Favourite(car_id, g.current_user['id'])
+            fav = Favourites(car_id, g.current_user['id'])
             db.session.add(fav)
             db.session.commit()
             message = [{"message": "Car Successfully Favourited", "car_id": car_id}]
     return jsonify(message)
 
-#@app.route('/api/search')
+#@app.route('/api/search/')
 
 @app.route('/api/users/<user_id>', methods=['GET'])
+@requires_auth
 def get_user(user_id):
     message = [{"errors": "Invalid request"}]
     if request.method == 'GET':
@@ -238,12 +232,13 @@ def get_user(user_id):
     return jsonify(message)
 
 @app.route('/api/users/<user_id>/favourites', methods=['GET'])
+@requires_auth
 def get_favs(user_id):
     message = [{"errors": "Invalid request"}]
     if request.method == 'GET':
         favs = Favourites.query.filter_by(id=user_id).all()
         allfavs = []
-        for c in favs:
+        for f in favs:
             fav = {}
             fav['car_id'] = f.car_id
             fav['user_id'] = f.user_id
@@ -264,6 +259,10 @@ def api_secure():
 def load_user(id):
     return Users.query.get(int(id))
 
+@app.route("/static/uploads/<path:filename>")
+def get_image(filename):
+    root_dir = os.getcwd()
+    return send_from_directory(os.path.join(root_dir, app.config['UPLOAD_FOLDER']), filename)
 
 # Please create all new routes and view functions above this route.
 # This route is now our catch all route for our VueJS single page

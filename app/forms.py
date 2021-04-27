@@ -6,7 +6,7 @@ from wtforms.validators import DataRequired, Email
 class UserForm(FlaskForm):
     username = StringField('username', validators=[DataRequired()])
     password = PasswordField('password', validators=[DataRequired()])
-    name = StringField('firstname', validators=[DataRequired()])
+    name = StringField('name', validators=[DataRequired()])
     email = StringField('email', validators=[DataRequired()])
     location = StringField('location', validators=[DataRequired()])
     biography = TextAreaField('biography', validators=[DataRequired()])
@@ -19,9 +19,9 @@ class CarForm(FlaskForm):
     description = StringField('description', validators=[DataRequired()])
     make = StringField('make', validators=[DataRequired()])
     model = StringField('model', validators=[DataRequired()])
-    color = StringField('color', validators=[DataRequired()])
+    colour = StringField('colour', validators=[DataRequired()])
     year = StringField('year', validators=[DataRequired()])
-    transmission = StringField('location', validators=[DataRequired()])
+    transmission = StringField('transmission', validators=[DataRequired()])
     car_type = StringField('car_type', validators=[DataRequired()])
     price = DecimalField('price', validators=[DataRequired()])
     photo = FileField('photo', validators=[

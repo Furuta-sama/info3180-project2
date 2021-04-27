@@ -46,18 +46,19 @@ class Cars(db.Model):
     __tablename__ = 'cars'
 
     id = db.Column(db.Integer, primary_key=True)
-    description = db.Column(db.Integer)
-    make = db.Column(db.String(250), unique=True)
+    description = db.Column(db.String(250))
+    make = db.Column(db.String(250))
     model = db.Column(db.String(300))
-    colour = db.Column(db.DateTime, default=datetime.date.today())
-    year = db.Column(db.String(50))
+    colour = db.Column(db.String(100))
+    year = db.Column(db.String(100))
     transmission = db.Column(db.String(300))
     car_type = db.Column(db.String(300))
     price = db.Column(db.Numeric(10,2))
     photo = db.Column(db.String(300))
     user_id = db.Column(db.Integer)
 
-    def __init__(self, description, make, model, colour, year, transmission, car_type, price, photo, user_id):
+    def __init__(self, user_id, description, make, model, colour, year, transmission, car_type, price, photo):
+        self.user_id = user_id
         self.description = description
         self.make = make
         self.model = model
@@ -67,7 +68,6 @@ class Cars(db.Model):
         self.car_type = car_type
         self.price = price
         self.photo = photo
-        self.user_id = user_id
     
     def __repr__(self):
         return '<Car %r, %r, %r, %r, %r, %r, %r, %r, %r, %r, %r>' % (self.id, self.description, self.make, self.model, self.colour, self.year, self.transmission, self.car_type, self.price, self.photo, self.user_id)

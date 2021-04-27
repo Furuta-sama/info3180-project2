@@ -6,13 +6,15 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'Fd?d8+T_9LjRGyyM-7&hTwejt!+tDTayFgEnqu?wWAcd-7+RL5sFkveTx8ExSbaUP2#3f'
+app.config['SECRET_KEY'] = '5accdb11b2c10a78d7c92c5fa102ea77fcd50c2058b00f6e'
 app.config['UPLOAD_FOLDER'] = './app/static/uploads'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://oxnabkcqgxbutm:880994de7475d4aa2295dfb30cbfdef0ee21b1af72c22181c783b778a77d0dab@ec2-52-44-166-58.compute-1.amazonaws.com:5432/d40fgqemjjde1'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://project2:password123@localhost/project2'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SALT'] = 'r?fPfnryZfJ=M*aQxz$h2_F#!X@YR9nEB&f^SU3qRkVTt3WeP528BRYGthRZ7@8hT4Wqh'
 
 db = SQLAlchemy(app)
+
+WTF_CSRF_ENABLED = False
 
 login_manager = LoginManager()
 login_manager.init_app(app)
