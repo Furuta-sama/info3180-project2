@@ -731,8 +731,6 @@ const router = new VueRouter({
         
         {path: "/cars/new", component: NewCar},
         
-        {path: "/cars/:car_id", component: Car, props: true},
-
         // This is a catch all route in case none of the above matches
         {path: "*", component: NotFound}
     ]
